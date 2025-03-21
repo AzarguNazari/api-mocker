@@ -1,0 +1,5 @@
+{
+  "bin": {
+    "mocker": "./src/index.js"
+  }
+} 
