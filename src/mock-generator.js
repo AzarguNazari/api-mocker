@@ -11,7 +11,7 @@ function generateMockResponse(responseSchema) {
   return generateMockData(schema);
 }
 
-function generateMockData(schema) {
+function generateMockData(schema, propertyName = '') {
   if (schema.example) {
     return schema.example;
   }
@@ -21,16 +21,17 @@ function generateMockData(schema) {
       const obj = {};
       if (schema.properties) {
         for (const [key, prop] of Object.entries(schema.properties)) {
-          obj[key] = generateMockData(prop);
+          obj[key] = generateMockData(prop, key);
         }
       }
       return obj;
 
     case 'array':
       const count = schema.minItems || 10; // Default to 10 items if minItems not specified
-      return Array(count).fill().map(() => generateMockData(schema.items));
+      return Array(count).fill().map(() => generateMockData(schema.items, propertyName));
 
     case 'string':
+      // Check format first
       if (schema.format) {
         switch (schema.format) {
           case 'date':
@@ -40,6 +41,7 @@ function generateMockData(schema) {
           case 'email':
             return `user${Math.floor(Math.random() * 1000)}@example.com`;
           case 'uri':
+          case 'url':
             return `https://example.com/resource/${Math.floor(Math.random() * 1000)}`;
           case 'uuid':
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -49,6 +51,22 @@ function generateMockData(schema) {
             });
         }
       }
+
+      // Check property name for additional hints
+      propertyName = propertyName.toLowerCase();
+      
+      if (propertyName.includes('email')) {
+        return `user${Math.floor(Math.random() * 1000)}@example.com`;
+      }
+      
+      if (propertyName.includes('phone')) {
+        return `+1${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+      }
+      
+      if (propertyName.includes('url') || propertyName.includes('link') || propertyName.includes('website')) {
+        return `https://example.com/resource/${Math.floor(Math.random() * 1000)}`;
+      }
+
       if (schema.enum) {
         return schema.enum[Math.floor(Math.random() * schema.enum.length)];
       }

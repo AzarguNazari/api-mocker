@@ -41,15 +41,6 @@ paths:
                       $ref: '#/components/schemas/User'
                   total:
                     type: integer
-                example:
-                  users:
-                    - id: 1
-                      name: "Jamshid Doe"
-                      email: "john@example.com"
-                    - id: 2
-                      name: "Karim Smith"
-                      email: "jane@example.com"
-                  total: 2
     
     post:
       summary: Create a new user
@@ -66,10 +57,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-              example:
-                id: 3
-                name: "New User"
-                email: "new@example.com"
 
   /users/{id}:
     get:
@@ -87,10 +74,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-              example:
-                id: 1
-                name: "John Doe"
-                email: "john@example.com"
         '404':
           description: User not found
           content:
@@ -100,9 +83,7 @@ paths:
                 properties:
                   error:
                     type: string
-              example:
-                error: "User not found"
-
+    
     put:
       summary: Update user by ID
       parameters:
@@ -148,10 +129,39 @@ components:
           type: string
         email:
           type: string
+        role:
+          type: string
+          enum: [admin, user, moderator]
+        status:
+          type: string
+          enum: [active, inactive, banned]
+        profile:
+          type: object
+          properties:
+            age:
+              type: integer
+            gender:
+              type: string
+            location:
+              type: string
+        preferences:
+          type: object
+          properties:
+            theme:
+              type: string
+              enum: [light, dark]
+            notifications:
+              type: boolean
+        createdAt:
+          type: string
+          format: date-time
       required:
         - id
         - name
         - email
+        - role
+        - status
+        - createdAt
 
     UserInput:
       type: object
@@ -160,6 +170,31 @@ components:
           type: string
         email:
           type: string
+        role:
+          type: string
+          enum: [admin, user, moderator]
+        status:
+          type: string
+          enum: [active, inactive, banned]
+        profile:
+          type: object
+          properties:
+            age:
+              type: integer
+            gender:
+              type: string
+            location:
+              type: string
+        preferences:
+          type: object
+          properties:
+            theme:
+              type: string
+              enum: [light, dark]
+            notifications:
+              type: boolean
       required:
         - name
-        - email 
+        - email
+        - role
+        - status
