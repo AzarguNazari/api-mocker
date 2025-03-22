@@ -83,7 +83,7 @@ paths:
 2. Run the mock server:
 
 ```bash
-mocker --path api.yaml --port 3000
+api-mocker --path api.yaml --port 3000
 ```
 
 3. Access your mock API:
