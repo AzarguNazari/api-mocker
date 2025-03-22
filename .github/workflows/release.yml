@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*' # Trigger on version tags
 
+permissions:
+  contents: write # This gives permission to create releases
+  packages: write # This gives permission to publish packages
+
 jobs:
   release:
     runs-on: ubuntu-latest
