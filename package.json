@@ -1,22 +1,41 @@
 {
-  "name": "api-mocker",
-  "version": "1.0.0",
+  "name": "@nazariazargul/api-mocker",
+  "version": "1.0.1",
   "description": "CLI tool to mock REST endpoints from OpenAPI specifications",
+  "preferGlobal": true,
   "bin": {
-    "mocker": "./src/index.js"
+    "api-mocker": "./src/index.js"
   },
+  "main": "./src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
   },
   "keywords": [
     "api",
     "mock",
     "openapi",
     "swagger",
-    "cli"
+    "cli",
+    "rest",
+    "testing",
+    "development",
+    "global"
   ],
-  "author": "",
+  "author": {
+    "name": "Hazar Nazari"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/api-mocker"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/api-mocker/issues"
+  },
+  "homepage": "https://github.com/yourusername/api-mocker#readme",
   "license": "MIT",
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
@@ -24,5 +43,8 @@
     "express": "^4.18.3",
     "js-yaml": "^4.1.0",
     "swagger-ui-express": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 } 
