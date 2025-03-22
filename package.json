@@ -1,6 +1,6 @@
 {
   "name": "@nazariazargul/api-mocker",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "CLI tool to mock REST endpoints from OpenAPI specifications",
   "preferGlobal": true,
   "bin": {
@@ -30,12 +30,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/api-mocker"
+    "url": "https://github.com/AzarguNazari/api-mocker"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/api-mocker/issues"
+    "url": "https://github.com/AzarguNazari/api-mocker/issues"
   },
-  "homepage": "https://github.com/yourusername/api-mocker#readme",
+  "homepage": "https://github.com/AzarguNazari/api-mocker#readme",
   "license": "MIT",
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
