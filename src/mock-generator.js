@@ -27,7 +27,7 @@ function generateMockData(schema) {
       return obj;
 
     case 'array':
-      const count = Math.floor(Math.random() * 3) + 1; // Generate 1-3 items
+      const count = schema.minItems || 10; // Default to 10 items if minItems not specified
       return Array(count).fill().map(() => generateMockData(schema.items));
 
     case 'string':
