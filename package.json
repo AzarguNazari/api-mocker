@@ -1,6 +1,6 @@
 {
   "name": "@nazariazargul/api-mocker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI tool to mock REST endpoints from OpenAPI specifications",
   "preferGlobal": true,
   "bin": {
