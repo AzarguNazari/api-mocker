@@ -15,20 +15,17 @@ A command-line tool to generate mock REST APIs from OpenAPI/Swagger specificatio
 
 ```bash
 # Install globally
-npm install -g api-mocker
-
-# Or use directly with npx
-npx api-mocker
+npm install -g @nazariazargul/api-mocker
 ```
 
 ## Usage
 
 ```bash
 # Basic usage
-mocker --path path/to/openapi.yaml --port 3000
+api-mocker --path path/to/openapi.yaml --port 3000
 
 # Options
-mocker --help  # Show help
+api-mocker --help
 ```
 
 ### Command Line Options
