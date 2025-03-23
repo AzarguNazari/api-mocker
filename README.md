@@ -22,7 +22,7 @@ npm install -g @nazariazargul/api-mocker
 
 ```bash
 # Basic usage
-api-mocker --path path/to/openapi.yaml --port 3000
+api-mocker -s path/to/openapi.yaml --port 3000
 
 # Options
 api-mocker --help
@@ -83,7 +83,7 @@ paths:
 2. Run the mock server:
 
 ```bash
-api-mocker --path api.yaml --port 3000
+api-mocker -s api.yaml --port 3000
 ```
 
 3. Access your mock API:
