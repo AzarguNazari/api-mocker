@@ -30,7 +30,7 @@ api-mocker --help
 
 ### Command Line Options
 
-- `--path, -s`: Path to OpenAPI specification file (default: './openapi.yaml')
+- `--spec, -s`: Path to OpenAPI specification file (default: './openapi.yaml')
 - `--port, -p`: Port to run the mock server on (default: 3000)
 
 ## Mock Data Generation
