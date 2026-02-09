@@ -16,7 +16,7 @@ program
     .description('CLI to mock REST endpoints from OpenAPI specifications')
     .version(getCliVersion())
     .option('-p, --port <number>', 'port to run the mock server on', '3000')
-    .option('--path <path>', 'path to OpenAPI file or folder containing YAML specs', './openapi.yaml')
+    .option('--path <path>', 'path to OpenAPI file or folder containing YAML/JSON specs', './openapi.yaml')
     .action(async (options: { port: string; path: string }) => {
         try {
             const specPath = path.resolve(process.cwd(), options.path);

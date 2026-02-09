@@ -1,9 +1,22 @@
 import fs from 'fs';
 import os from 'os';
-import { isYamlFile, isDirectory, isFile, findYamlFiles } from '../file-scanner.util';
+import { isSpecFile, isYamlFile, isDirectory, isFile, findSpecFiles, findYamlFiles } from '../file-scanner.util';
 import path from 'path';
 
 describe('File Scanner Util', () => {
+    describe('isSpecFile', () => {
+        it('should return true for supported spec file extensions', () => {
+            expect(isSpecFile('spec.yaml')).toBe(true);
+            expect(isSpecFile('spec.yml')).toBe(true);
+            expect(isSpecFile('spec.json')).toBe(true);
+        });
+
+        it('should return false for non-spec file extensions', () => {
+            expect(isSpecFile('readme.md')).toBe(false);
+            expect(isSpecFile('index.ts')).toBe(false);
+        });
+    });
+
     describe('isYamlFile', () => {
         it('should return true for .yaml files', () => {
             expect(isYamlFile('spec.yaml')).toBe(true);
@@ -59,8 +72,8 @@ describe('File Scanner Util', () => {
         });
     });
 
-    describe('findYamlFiles', () => {
-        it('should return YAML files recursively', () => {
+    describe('findSpecFiles', () => {
+        it('should return supported spec files recursively', () => {
             const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'api-mocker-'));
             const nestedDir = path.join(tmpRoot, 'nested');
             const deepDir = path.join(nestedDir, 'deep');
@@ -69,19 +82,39 @@ describe('File Scanner Util', () => {
 
             const yaml1 = path.join(tmpRoot, 'root.yaml');
             const yaml2 = path.join(nestedDir, 'child.yml');
+            const jsonSpec = path.join(deepDir, 'api.json');
             const txt = path.join(deepDir, 'ignore.txt');
             fs.writeFileSync(yaml1, 'openapi: 3.0.0');
             fs.writeFileSync(yaml2, 'openapi: 3.0.0');
+            fs.writeFileSync(jsonSpec, '{"openapi":"3.0.0"}');
             fs.writeFileSync(txt, 'ignore');
 
-            const result = findYamlFiles(tmpRoot);
-            expect(result.sort()).toEqual([yaml1, yaml2].sort());
+            const result = findSpecFiles(tmpRoot);
+            expect(result.sort()).toEqual([yaml1, yaml2, jsonSpec].sort());
 
             fs.rmSync(tmpRoot, { recursive: true, force: true });
         });
 
         it('should return empty array for non-directory input', () => {
-            expect(findYamlFiles('/path/does/not/exist')).toEqual([]);
+            expect(findSpecFiles('/path/does/not/exist')).toEqual([]);
+        });
+    });
+
+    describe('findYamlFiles', () => {
+        it('should return only YAML files recursively', () => {
+            const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'api-mocker-'));
+            const nestedDir = path.join(tmpRoot, 'nested');
+            fs.mkdirSync(nestedDir);
+
+            const yamlFile = path.join(tmpRoot, 'root.yaml');
+            const jsonSpec = path.join(nestedDir, 'api.json');
+            fs.writeFileSync(yamlFile, 'openapi: 3.0.0');
+            fs.writeFileSync(jsonSpec, '{"openapi":"3.0.0"}');
+
+            const result = findYamlFiles(tmpRoot);
+            expect(result).toEqual([yamlFile]);
+
+            fs.rmSync(tmpRoot, { recursive: true, force: true });
         });
     });
 });

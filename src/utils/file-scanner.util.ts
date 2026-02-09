@@ -17,28 +17,40 @@ export function isFile(filePath: string): boolean {
     }
 }
 
-export function findYamlFiles(dirPath: string): string[] {
+export function findSpecFiles(dirPath: string): string[] {
     if (!isDirectory(dirPath)) {
         return [];
     }
 
-    const yamlFiles: string[] = [];
+    const specFiles: string[] = [];
     const files = fs.readdirSync(dirPath);
 
     for (const file of files) {
         const fullPath = path.join(dirPath, file);
 
         if (isDirectory(fullPath)) {
-            yamlFiles.push(...findYamlFiles(fullPath));
+            specFiles.push(...findSpecFiles(fullPath));
             continue;
         }
 
-        if (isYamlFile(file)) {
-            yamlFiles.push(fullPath);
+        if (isSpecFile(file)) {
+            specFiles.push(fullPath);
         }
     }
 
-    return yamlFiles;
+    return specFiles;
+}
+
+export function isSpecFile(filename: string): boolean {
+    const ext = path.extname(filename).toLowerCase();
+    return ext === '.yaml' || ext === '.yml' || ext === '.json';
+}
+
+export function findYamlFiles(dirPath: string): string[] {
+    return findSpecFiles(dirPath).filter((filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        return ext === '.yaml' || ext === '.yml';
+    });
 }
 
 export function isYamlFile(filename: string): boolean {

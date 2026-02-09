@@ -24,7 +24,7 @@ describe('Multi-Spec Server Service', () => {
                 paths: {},
             };
             mockFileScanner.isFile.mockReturnValue(true);
-            mockFileScanner.isYamlFile.mockReturnValue(true);
+            mockFileScanner.isSpecFile.mockReturnValue(true);
             mockParserService.parseOpenAPISpec.mockResolvedValue(parsedSpec);
 
             const result = await loadSpecsFromPath(specPath);
@@ -33,13 +33,28 @@ describe('Multi-Spec Server Service', () => {
             expect(mockParserService.parseOpenAPISpec).toHaveBeenCalledWith(specPath);
         });
 
-        it('should throw for non-YAML file input', async () => {
+        it('should load single JSON file', async () => {
+            const specPath = '/specs/api.json';
+            const parsedSpec: Document = {
+                openapi: '3.0.0',
+                info: { title: 'Single JSON', version: '1.0.0' },
+                paths: {},
+            };
             mockFileScanner.isFile.mockReturnValue(true);
-            mockFileScanner.isYamlFile.mockReturnValue(false);
+            mockFileScanner.isSpecFile.mockReturnValue(true);
+            mockParserService.parseOpenAPISpec.mockResolvedValue(parsedSpec);
+
+            const result = await loadSpecsFromPath(specPath);
+            expect(result).toEqual([parsedSpec]);
+        });
+
+        it('should throw for unsupported file input', async () => {
+            mockFileScanner.isFile.mockReturnValue(true);
+            mockFileScanner.isSpecFile.mockReturnValue(false);
 
             await expect(loadSpecsFromPath('/specs/api.json')).rejects.toThrow(ParseError);
             await expect(loadSpecsFromPath('/specs/api.json')).rejects.toThrow(
-                'File must be a YAML file (.yaml or .yml)'
+                'File must be an OpenAPI spec file (.yaml, .yml, or .json)'
             );
         });
 
@@ -61,7 +76,7 @@ describe('Multi-Spec Server Service', () => {
             };
             mockFileScanner.isFile.mockReturnValue(false);
             mockFileScanner.isDirectory.mockReturnValue(true);
-            mockFileScanner.findYamlFiles.mockReturnValue(files);
+            mockFileScanner.findSpecFiles.mockReturnValue(files);
             mockParserService.parseOpenAPISpec
                 .mockResolvedValueOnce(parsedSpec)
                 .mockRejectedValueOnce(new ParseError('invalid'));
@@ -75,18 +90,18 @@ describe('Multi-Spec Server Service', () => {
         it('should throw when directory has no YAML files', async () => {
             mockFileScanner.isFile.mockReturnValue(false);
             mockFileScanner.isDirectory.mockReturnValue(true);
-            mockFileScanner.findYamlFiles.mockReturnValue([]);
+            mockFileScanner.findSpecFiles.mockReturnValue([]);
 
             await expect(loadSpecsFromPath('/specs')).rejects.toThrow(ParseError);
             await expect(loadSpecsFromPath('/specs')).rejects.toThrow(
-                'No YAML files found in directory: /specs'
+                'No OpenAPI spec files found in directory: /specs'
             );
         });
 
         it('should throw when directory has no valid specs', async () => {
             mockFileScanner.isFile.mockReturnValue(false);
             mockFileScanner.isDirectory.mockReturnValue(true);
-            mockFileScanner.findYamlFiles.mockReturnValue(['/specs/a.yaml']);
+            mockFileScanner.findSpecFiles.mockReturnValue(['/specs/a.yaml']);
             mockParserService.parseOpenAPISpec.mockRejectedValue(new ParseError('invalid'));
 
             await expect(loadSpecsFromPath('/specs')).rejects.toThrow(ParseError);
