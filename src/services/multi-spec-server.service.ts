@@ -25,7 +25,7 @@ export async function loadSpecsFromPath(specPath: string): Promise<Document[]> {
                 const spec = await parseOpenAPISpec(file);
                 specs.push(spec);
                 console.log(`✓ Loaded spec from: ${file}`);
-            } catch (error) {
+            } catch {
                 console.warn(`⚠ Skipped invalid spec: ${file}`);
             }
         }
