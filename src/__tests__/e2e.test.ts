@@ -2,21 +2,30 @@ import axios from 'axios';
 import { startMockServer } from '../services/server.service';
 import { loadSpecsFromPath, mergeSpecs } from '../services/multi-spec-server.service';
 import path from 'path';
+import { Server } from 'http';
 
 describe('End-to-End Integration Tests', () => {
     const TEST_PORT = 4500 + Math.floor(Math.random() * 500);
     const BASE_URL = `http://localhost:${TEST_PORT}`;
+    let server: Server | undefined;
 
     beforeAll(async () => {
         const specsPath = path.resolve(__dirname, '../../test-specs');
         const specs = await loadSpecsFromPath(specsPath);
         const mergedSpec = mergeSpecs(specs);
-        await startMockServer(mergedSpec, TEST_PORT);
+        server = await startMockServer(mergedSpec, TEST_PORT);
         await new Promise((resolve) => setTimeout(resolve, 1000));
     });
 
-    afterAll(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+    afterAll((done) => {
+        if (!server) {
+            done();
+            return;
+        }
+        server.close(() => {
+            server = undefined;
+            done();
+        });
     });
 
     describe('Users API', () => {

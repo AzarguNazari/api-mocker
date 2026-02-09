@@ -1,10 +1,24 @@
 import { generateMockResponse } from '../mock-generator.service';
 import { startMockServer } from '../server.service';
 import { Document, ResponseObject } from '../../types';
+import { Server } from 'http';
 
 jest.setTimeout(10000);
 
 describe('Server Service', () => {
+    let server: Server | undefined;
+
+    afterEach((done) => {
+        if (!server) {
+            done();
+            return;
+        }
+        server.close(() => {
+            server = undefined;
+            done();
+        });
+    });
+
     const mockApiSpec: Document = {
         openapi: '3.0.0',
         info: {
@@ -42,7 +56,8 @@ describe('Server Service', () => {
     describe('Server Initialization', () => {
         it('should start server successfully', async () => {
             const port = 3100 + Math.floor(Math.random() * 1000);
-            await expect(startMockServer(mockApiSpec, port)).resolves.toBeUndefined();
+            server = await startMockServer(mockApiSpec, port);
+            expect(server).toBeDefined();
         });
     });
 });

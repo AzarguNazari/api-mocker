@@ -1,10 +1,14 @@
 import express, { Request, Response, NextFunction, Application } from 'express';
+import { Server } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { Document, OperationObject, ParameterObject, ResponseObject } from '../types';
 import { generateMockResponse } from './mock-generator.service';
 import { ValidationError } from '../utils/error-handler.util';
+import { createLogger } from '../utils/logger.util';
 
-export async function startMockServer(apiSpec: Document, port: number): Promise<void> {
+const logger = createLogger('server');
+
+export async function startMockServer(apiSpec: Document, port: number): Promise<Server> {
     const app = express();
     setupMiddleware(app);
     setupSwaggerUI(app, apiSpec);
@@ -12,8 +16,8 @@ export async function startMockServer(apiSpec: Document, port: number): Promise<
     setupErrorHandlers(app);
 
     return new Promise((resolve) => {
-        app.listen(port, () => {
-            resolve();
+        const server = app.listen(port, () => {
+            resolve(server);
         });
     });
 }
@@ -134,7 +138,7 @@ function handleOptionsRequest(method: string) {
 
 function setupErrorHandlers(app: Application): void {
     app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-        console.error(err.stack);
+        logger.error(err.stack ?? err.message);
         res.status(500).json({
             error: 'Internal Server Error',
             message: err.message,

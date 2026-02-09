@@ -2,6 +2,9 @@ import { Document } from '../types';
 import { parseOpenAPISpec } from './parser.service';
 import { isDirectory, isFile, isYamlFile, findYamlFiles } from '../utils/file-scanner.util';
 import { ParseError } from '../utils/error-handler.util';
+import { createLogger } from '../utils/logger.util';
+
+const logger = createLogger('multi-spec');
 
 export async function loadSpecsFromPath(specPath: string): Promise<Document[]> {
     if (isFile(specPath)) {
@@ -24,9 +27,9 @@ export async function loadSpecsFromPath(specPath: string): Promise<Document[]> {
             try {
                 const spec = await parseOpenAPISpec(file);
                 specs.push(spec);
-                console.log(`✓ Loaded spec from: ${file}`);
+                logger.info(`Loaded spec from: ${file}`);
             } catch {
-                console.warn(`⚠ Skipped invalid spec: ${file}`);
+                logger.warn(`Skipped invalid spec: ${file}`);
             }
         }
 
@@ -69,7 +72,7 @@ export function mergeSpecs(specs: Document[]): Document {
             }
 
             if (mergedSpec.paths![path]) {
-                console.warn(`⚠ Duplicate path found: ${path} - using first occurrence`);
+                logger.warn(`Duplicate path found: ${path} - using first occurrence`);
                 continue;
             }
 

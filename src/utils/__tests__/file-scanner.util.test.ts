@@ -1,4 +1,6 @@
-import { isYamlFile, isDirectory, isFile } from '../file-scanner.util';
+import fs from 'fs';
+import os from 'os';
+import { isYamlFile, isDirectory, isFile, findYamlFiles } from '../file-scanner.util';
 import path from 'path';
 
 describe('File Scanner Util', () => {
@@ -54,6 +56,32 @@ describe('File Scanner Util', () => {
         it('should return false for directory path', () => {
             const dirPath = path.join(__dirname, '..');
             expect(isFile(dirPath)).toBe(false);
+        });
+    });
+
+    describe('findYamlFiles', () => {
+        it('should return YAML files recursively', () => {
+            const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'api-mocker-'));
+            const nestedDir = path.join(tmpRoot, 'nested');
+            const deepDir = path.join(nestedDir, 'deep');
+            fs.mkdirSync(nestedDir);
+            fs.mkdirSync(deepDir);
+
+            const yaml1 = path.join(tmpRoot, 'root.yaml');
+            const yaml2 = path.join(nestedDir, 'child.yml');
+            const txt = path.join(deepDir, 'ignore.txt');
+            fs.writeFileSync(yaml1, 'openapi: 3.0.0');
+            fs.writeFileSync(yaml2, 'openapi: 3.0.0');
+            fs.writeFileSync(txt, 'ignore');
+
+            const result = findYamlFiles(tmpRoot);
+            expect(result.sort()).toEqual([yaml1, yaml2].sort());
+
+            fs.rmSync(tmpRoot, { recursive: true, force: true });
+        });
+
+        it('should return empty array for non-directory input', () => {
+            expect(findYamlFiles('/path/does/not/exist')).toEqual([]);
         });
     });
 });
