@@ -4,15 +4,25 @@
   "description": "CLI tool to mock REST endpoints from OpenAPI specifications",
   "preferGlobal": true,
   "bin": {
-    "api-mocker": "./src/index.js"
+    "api-mock": "./dist/index.js"
   },
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "release:patch": "npm version patch && git push && git push --tags",
-    "release:minor": "npm version minor && git push && git push --tags",
-    "release:major": "npm version major && git push && git push --tags"
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint 'src/**/*.ts' --ignore-pattern '**/*.test.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --ignore-pattern '**/*.test.ts' --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepack": "npm run build",
+    "release:patch": "npm run build && npm version patch && git push && git push --tags",
+    "release:minor": "npm run build && npm version minor && git push && git push --tags",
+    "release:major": "npm run build && npm version major && git push && git push --tags"
   },
   "keywords": [
     "api",
@@ -26,7 +36,7 @@
     "global"
   ],
   "author": {
-    "name": "Hazar Nazari"
+    "name": "Hazar Gul Nazari"
   },
   "repository": {
     "type": "git",
@@ -43,6 +53,24 @@
     "express": "^4.18.3",
     "js-yaml": "^4.1.0",
     "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.5",
+    "@types/supertest": "^6.0.2",
+    "@types/swagger-ui-express": "^4.1.6",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "axios": "^1.13.5",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "openapi-types": "^12.1.3",
+    "prettier": "^3.2.4",
+    "supertest": "^6.3.4",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=14.0.0"

@@ -1,46 +1,6 @@
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-yarn.lock
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Build output
 dist/
-build/
-out/
-.next/
-
-# IDE and editor files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temporary files
-tmp/
-temp/
-*.log
-
-# Testing
+node_modules/
 coverage/
-.nyc_output/
-
-# Misc
-.cache/
-.local/ 
+*.log
+.DS_Store
+.env
