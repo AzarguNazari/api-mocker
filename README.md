@@ -88,10 +88,6 @@ npm run lint
 
 See `CONTRIBUTING.md` for setup, workflow, and pull request guidelines.
 
-## Changelog
-
-See `CHANGELOG.md`.
-
 ## License
 
 MIT, see `LICENSE`.
