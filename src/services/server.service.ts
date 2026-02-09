@@ -73,11 +73,11 @@ function createRouteHandler(operation: OperationObject) {
     return (req: Request, res: Response): void => {
         try {
             validateRequiredParameters(req, operation);
-            const responseSpec = selectResponseSpec(operation);
+            const { responseSpec, statusCode } = selectResponse(operation);
             const mockResponse = generateMockResponse(responseSpec);
-            const statusCode = determineStatusCode(operation, responseSpec);
+            const response = applyRequestBodyShape(req.body, mockResponse);
 
-            res.status(statusCode).json(mockResponse);
+            res.status(statusCode).json(response);
         } catch (error) {
             if (error instanceof ValidationError) {
                 res.status(400).json({ error: error.message });
@@ -104,29 +104,87 @@ function validateRequiredParameters(req: Request, operation: OperationObject): v
     }
 }
 
-function selectResponseSpec(operation: OperationObject): ResponseObject {
+function selectResponse(operation: OperationObject): { responseSpec: ResponseObject; statusCode: number } {
     if (!operation.responses) {
-        return { description: 'No response defined' };
+        return { responseSpec: { description: 'No response defined' }, statusCode: 200 };
     }
 
-    return (
-        (operation.responses['200'] as ResponseObject) ||
-        (operation.responses['201'] as ResponseObject) ||
-        (operation.responses['default'] as ResponseObject) ||
-        { description: 'Default response' }
-    );
+    const responseEntries = Object.entries(operation.responses).filter(([code]) => /^\d{3}$/.test(code));
+    if (responseEntries.length === 0) {
+        const defaultResponse = operation.responses.default;
+        if (isResponseObject(defaultResponse)) {
+            return { responseSpec: defaultResponse, statusCode: 200 };
+        }
+
+        return { responseSpec: { description: 'Default response' }, statusCode: 200 };
+    }
+
+    const successfulResponses = responseEntries
+        .map(([code, response]) => ({ code: Number(code), response }))
+        .filter(({ code }) => code >= 200 && code < 300)
+        .sort((a, b) => a.code - b.code);
+    if (successfulResponses.length > 0) {
+        const selected = successfulResponses[0];
+        if (isResponseObject(selected.response)) {
+            return { responseSpec: selected.response, statusCode: selected.code };
+        }
+    }
+
+    const allResponses = responseEntries
+        .map(([code, response]) => ({ code: Number(code), response }))
+        .sort((a, b) => a.code - b.code);
+    const selected = allResponses[0];
+    if (!selected || !isResponseObject(selected.response)) {
+        return { responseSpec: { description: 'Default response' }, statusCode: 200 };
+    }
+
+    return { responseSpec: selected.response, statusCode: selected.code };
 }
 
-function determineStatusCode(operation: OperationObject, responseSpec: ResponseObject): number {
-    if (!operation.responses) {
-        return 200;
+function isResponseObject(response: unknown): response is ResponseObject {
+    if (!response || typeof response !== 'object') {
+        return false;
     }
 
-    if (responseSpec === operation.responses['201']) {
-        return 201;
+    return !('$ref' in response);
+}
+
+function applyRequestBodyShape(requestBody: unknown, mockResponse: unknown): unknown {
+    if (!isRecord(mockResponse)) {
+        return mockResponse;
     }
 
-    return 200;
+    if (!isRecord(requestBody)) {
+        return mockResponse;
+    }
+
+    return mergeResponseWithRequestBody(mockResponse, requestBody);
+}
+
+function mergeResponseWithRequestBody(
+    mockResponse: Record<string, unknown>,
+    requestBody: Record<string, unknown>
+): Record<string, unknown> {
+    const merged: Record<string, unknown> = { ...mockResponse };
+
+    for (const [key, value] of Object.entries(requestBody)) {
+        if (isRecord(value) && isRecord(merged[key])) {
+            merged[key] = mergeResponseWithRequestBody(merged[key] as Record<string, unknown>, value);
+            continue;
+        }
+
+        merged[key] = value;
+    }
+
+    return merged;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
+
+    return !Array.isArray(value);
 }
 
 function handleOptionsRequest(method: string) {

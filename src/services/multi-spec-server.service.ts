@@ -1,6 +1,6 @@
 import { Document } from '../types';
 import { parseOpenAPISpec } from './parser.service';
-import { isDirectory, isFile, isYamlFile, findYamlFiles } from '../utils/file-scanner.util';
+import { isDirectory, isFile, isSpecFile, findSpecFiles } from '../utils/file-scanner.util';
 import { ParseError } from '../utils/error-handler.util';
 import { createLogger } from '../utils/logger.util';
 
@@ -8,22 +8,22 @@ const logger = createLogger('multi-spec');
 
 export async function loadSpecsFromPath(specPath: string): Promise<Document[]> {
     if (isFile(specPath)) {
-        if (!isYamlFile(specPath)) {
-            throw new ParseError('File must be a YAML file (.yaml or .yml)');
+        if (!isSpecFile(specPath)) {
+            throw new ParseError('File must be an OpenAPI spec file (.yaml, .yml, or .json)');
         }
         const spec = await parseOpenAPISpec(specPath);
         return [spec];
     }
 
     if (isDirectory(specPath)) {
-        const yamlFiles = findYamlFiles(specPath);
+        const specFiles = findSpecFiles(specPath);
 
-        if (yamlFiles.length === 0) {
-            throw new ParseError(`No YAML files found in directory: ${specPath}`);
+        if (specFiles.length === 0) {
+            throw new ParseError(`No OpenAPI spec files found in directory: ${specPath}`);
         }
 
         const specs: Document[] = [];
-        for (const file of yamlFiles) {
+        for (const file of specFiles) {
             try {
                 const spec = await parseOpenAPISpec(file);
                 specs.push(spec);
