@@ -165,10 +165,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 MIT
 
-## TODO
-
-- Add response header mocking
-- Support for authentication schemes
-- Custom data generators via plugins
-- Configurable array item counts
-- Request body validation
