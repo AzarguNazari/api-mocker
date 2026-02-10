@@ -77,6 +77,7 @@ function createRouteHandler(operation: OperationObject, apiSpec: Document): (req
         try {
             validateSecurity(req, operation, apiSpec);
             validateRequiredParameters(req, operation);
+
             const { responseSpec, statusCode } = selectResponse(operation);
             const mockResponse = generateMockResponse(responseSpec);
             const mockHeaders = generateMockHeaders(responseSpec);
@@ -88,8 +89,13 @@ function createRouteHandler(operation: OperationObject, apiSpec: Document): (req
                 res.status(400).json({ error: error.message });
                 return;
             }
-            logger.error(`Error processing route: ${error instanceof Error ? error.message : String(error)}`);
-            throw error;
+
+            const message = error instanceof Error ? error.message : String(error);
+            logger.error(`Error in route handler: ${message}`);
+            res.status(500).json({
+                error: 'Internal Server Error',
+                message
+            });
         }
     };
 }
