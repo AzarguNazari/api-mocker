@@ -20,6 +20,7 @@ import {
   generateRealisticDescription,
 } from './business-data.util';
 import { generateRealisticCurrency } from './finance-data.util';
+import { generateRealisticImage, generateRealisticAvatar } from './image-data.util';
 
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -37,7 +38,14 @@ export function generatePhoneNumber(): string {
   return generateRealisticPhone();
 }
 
-export function generateURL(): string {
+export function generateURL(propertyName = ''): string {
+  const lowerProp = propertyName.toLowerCase();
+  if (lowerProp.includes('image') || lowerProp.includes('picture') || lowerProp.includes('photo') || lowerProp.includes('thumbnail')) {
+    return generateRealisticImage();
+  }
+  if (lowerProp.includes('avatar') || lowerProp.includes('profile')) {
+    return generateRealisticAvatar();
+  }
   const randomId = generateRandomInteger(1, 9999);
   return `https://example.com/resource/${randomId}`;
 }
@@ -79,8 +87,8 @@ export function generateStringByPropertyName(propertyName: string): string | nul
     return generatePhoneNumber();
   }
 
-  if (lowerProp.includes('url') || lowerProp.includes('link') || lowerProp.includes('website')) {
-    return generateURL();
+  if (lowerProp.includes('url') || lowerProp.includes('link') || lowerProp.includes('website') || lowerProp.includes('image') || lowerProp.includes('picture') || lowerProp.includes('photo') || lowerProp.includes('avatar')) {
+    return generateURL(propertyName);
   }
 
   if (lowerProp.includes('name') && !lowerProp.includes('user') && !lowerProp.includes('file')) {

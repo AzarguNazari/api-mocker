@@ -39,6 +39,16 @@ describe('String Generator Util', () => {
       const url = generateURL();
       expect(url).toMatch(/^https:\/\/example\.com\/resource\/\d+$/);
     });
+
+    it('should generate image URL when containing image keyword', () => {
+      const url = generateURL('productImage');
+      expect(url).toMatch(/^https:\/\/picsum\.photos\/id\/\d+\/400\/400$/);
+    });
+
+    it('should generate avatar URL when containing avatar keyword', () => {
+      const url = generateURL('userAvatar');
+      expect(url).toMatch(/^https:\/\/i\.pravatar\.cc\/200\?u=\d+$/);
+    });
   });
 
   describe('generateDateString', () => {
@@ -97,6 +107,16 @@ describe('String Generator Util', () => {
     it('should generate URL for url property', () => {
       const result = generateStringByPropertyName('website_url');
       expect(result).toMatch(/^https:\/\/example\.com\/resource\/\d+$/);
+    });
+
+    it('should generate image URL for image property', () => {
+      const result = generateStringByPropertyName('cover_image');
+      expect(result).toMatch(/^https:\/\/picsum\.photos\/id\/\d+\/400\/400$/);
+    });
+
+    it('should generate avatar URL for avatar property', () => {
+      const result = generateStringByPropertyName('user_avatar');
+      expect(result).toMatch(/^https:\/\/i\.pravatar\.cc\/200\?u=\d+$/);
     });
 
     it('should return null for unknown property', () => {
