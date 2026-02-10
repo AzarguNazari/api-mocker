@@ -26,6 +26,29 @@ export function generateMockResponse(responseSchema: ResponseObject): unknown {
     return generateMockData(jsonContent.schema as SchemaObject);
 }
 
+export function generateMockHeaders(responseSchema: ResponseObject): Record<string, string> {
+    const headers: Record<string, string> = {};
+
+    if (!responseSchema.headers) {
+        return headers;
+    }
+
+    for (const [name, headerSpec] of Object.entries(responseSchema.headers)) {
+        if ('$ref' in headerSpec) {
+            continue; // Basic implementation, skipping refs for now
+        }
+
+        if (headerSpec.schema) {
+            const mockValue = generateMockData(headerSpec.schema as SchemaObject, name);
+            headers[name] = String(mockValue);
+        } else if (headerSpec.example !== undefined) {
+            headers[name] = String(headerSpec.example);
+        }
+    }
+
+    return headers;
+}
+
 export function generateMockData(schema: SchemaObject, propertyName = ''): unknown {
     if (schema.example !== undefined) {
         return schema.example;
