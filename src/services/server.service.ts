@@ -9,204 +9,209 @@ import { createLogger } from '../utils/logger.util';
 const logger = createLogger('server');
 
 export async function startMockServer(apiSpec: Document, port: number): Promise<Server> {
-    const app = express();
-    setupMiddleware(app);
-    setupSwaggerUI(app, apiSpec);
-    registerRoutes(app, apiSpec);
-    setupErrorHandlers(app);
+  const app = express();
+  setupMiddleware(app);
+  setupSwaggerUI(app, apiSpec);
+  registerRoutes(app, apiSpec);
+  setupErrorHandlers(app);
 
-    return new Promise((resolve) => {
-        const server = app.listen(port, () => {
-            resolve(server);
-        });
+  return new Promise((resolve) => {
+    const server = app.listen(port, () => {
+      resolve(server);
     });
+  });
 }
 
 function setupMiddleware(app: Application): void {
-    app.use(express.json());
-    app.use((_req: Request, res: Response, next: NextFunction) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        next();
-    });
+  app.use(express.json());
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+  });
 }
 
 function setupSwaggerUI(app: Application, apiSpec: Document): void {
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiSpec));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiSpec));
 }
 
 function registerRoutes(app: Application, apiSpec: Document): void {
-    if (!apiSpec.paths) {
-        return;
+  if (!apiSpec.paths) {
+    return;
+  }
+
+  for (const [path, pathItem] of Object.entries(apiSpec.paths)) {
+    if (!pathItem) {
+      continue;
     }
 
-    for (const [path, pathItem] of Object.entries(apiSpec.paths)) {
-        if (!pathItem) {
-            continue;
-        }
+    for (const [method, operation] of Object.entries(pathItem)) {
+      if (method === 'parameters' || !isValidHttpMethod(method)) {
+        continue;
+      }
 
-        for (const [method, operation] of Object.entries(pathItem)) {
-            if (method === 'parameters' || !isValidHttpMethod(method)) {
-                continue;
-            }
+      const expressPath = convertToExpressPath(path);
+      const httpMethod = method.toLowerCase() as keyof Application;
 
-            const expressPath = convertToExpressPath(path);
-            const httpMethod = method.toLowerCase() as keyof Application;
-
-            app[httpMethod](expressPath, createRouteHandler(operation as OperationObject));
-            app.options(expressPath, handleOptionsRequest(method));
-        }
+      app[httpMethod](expressPath, createRouteHandler(operation as OperationObject));
+      app.options(expressPath, handleOptionsRequest(method));
     }
+  }
 }
 
 function isValidHttpMethod(method: string): boolean {
-    const validMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
-    return validMethods.includes(method.toLowerCase());
+  const validMethods = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'];
+  return validMethods.includes(method.toLowerCase());
 }
 
 function convertToExpressPath(openApiPath: string): string {
-    return openApiPath.replace(/{([^}]+)}/g, ':$1');
+  return openApiPath.replace(/{([^}]+)}/g, ':$1');
 }
 
-function createRouteHandler(operation: OperationObject) {
-    return (req: Request, res: Response): void => {
-        try {
-            validateRequiredParameters(req, operation);
-            const { responseSpec, statusCode } = selectResponse(operation);
-            const mockResponse = generateMockResponse(responseSpec);
-            const response = applyRequestBodyShape(req.body, mockResponse);
+function createRouteHandler(operation: OperationObject): (req: Request, res: Response) => void {
+  return (req: Request, res: Response): void => {
+    try {
+      validateRequiredParameters(req, operation);
+      const { responseSpec, statusCode } = selectResponse(operation);
+      const mockResponse = generateMockResponse(responseSpec);
+      const response = applyRequestBodyShape(req.body, mockResponse);
 
-            res.status(statusCode).json(response);
-        } catch (error) {
-            if (error instanceof ValidationError) {
-                res.status(400).json({ error: error.message });
-                return;
-            }
-            throw error;
-        }
-    };
+      res.status(statusCode).json(response);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        res.status(400).json({ error: error.message });
+        return;
+      }
+      throw error;
+    }
+  };
 }
 
 function validateRequiredParameters(req: Request, operation: OperationObject): void {
-    if (!operation.parameters) {
-        return;
-    }
+  if (!operation.parameters) {
+    return;
+  }
 
-    const queryParams = operation.parameters.filter(
-        (p) => (p as ParameterObject).in === 'query'
-    ) as ParameterObject[];
+  const queryParams = operation.parameters.filter(
+    (p) => (p as ParameterObject).in === 'query'
+  ) as ParameterObject[];
 
-    for (const param of queryParams) {
-        if (param.required && !req.query[param.name]) {
-            throw new ValidationError(`Missing required query parameter: ${param.name}`);
-        }
+  for (const param of queryParams) {
+    if (param.required && !req.query[param.name]) {
+      throw new ValidationError(`Missing required query parameter: ${param.name}`);
     }
+  }
 }
 
-function selectResponse(operation: OperationObject): { responseSpec: ResponseObject; statusCode: number } {
-    if (!operation.responses) {
-        return { responseSpec: { description: 'No response defined' }, statusCode: 200 };
+function selectResponse(operation: OperationObject): {
+  responseSpec: ResponseObject;
+  statusCode: number;
+} {
+  if (!operation.responses) {
+    return { responseSpec: { description: 'No response defined' }, statusCode: 200 };
+  }
+
+  const responseEntries = Object.entries(operation.responses).filter(([code]) =>
+    /^\d{3}$/.test(code)
+  );
+  if (responseEntries.length === 0) {
+    const defaultResponse = operation.responses.default;
+    if (isResponseObject(defaultResponse)) {
+      return { responseSpec: defaultResponse, statusCode: 200 };
     }
 
-    const responseEntries = Object.entries(operation.responses).filter(([code]) => /^\d{3}$/.test(code));
-    if (responseEntries.length === 0) {
-        const defaultResponse = operation.responses.default;
-        if (isResponseObject(defaultResponse)) {
-            return { responseSpec: defaultResponse, statusCode: 200 };
-        }
+    return { responseSpec: { description: 'Default response' }, statusCode: 200 };
+  }
 
-        return { responseSpec: { description: 'Default response' }, statusCode: 200 };
+  const successfulResponses = responseEntries
+    .map(([code, response]) => ({ code: Number(code), response }))
+    .filter(({ code }) => code >= 200 && code < 300)
+    .sort((a, b) => a.code - b.code);
+  if (successfulResponses.length > 0) {
+    const selected = successfulResponses[0];
+    if (isResponseObject(selected.response)) {
+      return { responseSpec: selected.response, statusCode: selected.code };
     }
+  }
 
-    const successfulResponses = responseEntries
-        .map(([code, response]) => ({ code: Number(code), response }))
-        .filter(({ code }) => code >= 200 && code < 300)
-        .sort((a, b) => a.code - b.code);
-    if (successfulResponses.length > 0) {
-        const selected = successfulResponses[0];
-        if (isResponseObject(selected.response)) {
-            return { responseSpec: selected.response, statusCode: selected.code };
-        }
-    }
+  const allResponses = responseEntries
+    .map(([code, response]) => ({ code: Number(code), response }))
+    .sort((a, b) => a.code - b.code);
+  const selected = allResponses[0];
+  if (!selected || !isResponseObject(selected.response)) {
+    return { responseSpec: { description: 'Default response' }, statusCode: 200 };
+  }
 
-    const allResponses = responseEntries
-        .map(([code, response]) => ({ code: Number(code), response }))
-        .sort((a, b) => a.code - b.code);
-    const selected = allResponses[0];
-    if (!selected || !isResponseObject(selected.response)) {
-        return { responseSpec: { description: 'Default response' }, statusCode: 200 };
-    }
-
-    return { responseSpec: selected.response, statusCode: selected.code };
+  return { responseSpec: selected.response, statusCode: selected.code };
 }
 
 function isResponseObject(response: unknown): response is ResponseObject {
-    if (!response || typeof response !== 'object') {
-        return false;
-    }
+  if (!response || typeof response !== 'object') {
+    return false;
+  }
 
-    return !('$ref' in response);
+  return !('$ref' in response);
 }
 
 function applyRequestBodyShape(requestBody: unknown, mockResponse: unknown): unknown {
-    if (!isRecord(mockResponse)) {
-        return mockResponse;
-    }
+  if (!isRecord(mockResponse)) {
+    return mockResponse;
+  }
 
-    if (!isRecord(requestBody)) {
-        return mockResponse;
-    }
+  if (!isRecord(requestBody)) {
+    return mockResponse;
+  }
 
-    return mergeResponseWithRequestBody(mockResponse, requestBody);
+  return mergeResponseWithRequestBody(mockResponse, requestBody);
 }
 
 function mergeResponseWithRequestBody(
-    mockResponse: Record<string, unknown>,
-    requestBody: Record<string, unknown>
+  mockResponse: Record<string, unknown>,
+  requestBody: Record<string, unknown>
 ): Record<string, unknown> {
-    const merged: Record<string, unknown> = { ...mockResponse };
+  const merged: Record<string, unknown> = { ...mockResponse };
 
-    for (const [key, value] of Object.entries(requestBody)) {
-        if (isRecord(value) && isRecord(merged[key])) {
-            merged[key] = mergeResponseWithRequestBody(merged[key] as Record<string, unknown>, value);
-            continue;
-        }
-
-        merged[key] = value;
+  for (const [key, value] of Object.entries(requestBody)) {
+    if (isRecord(value) && isRecord(merged[key])) {
+      merged[key] = mergeResponseWithRequestBody(merged[key] as Record<string, unknown>, value);
+      continue;
     }
 
-    return merged;
+    merged[key] = value;
+  }
+
+  return merged;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-    if (!value || typeof value !== 'object') {
-        return false;
-    }
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
-    return !Array.isArray(value);
+  return !Array.isArray(value);
 }
 
-function handleOptionsRequest(method: string) {
-    return (_req: Request, res: Response): void => {
-        res.header('Access-Control-Allow-Methods', method.toUpperCase());
-        res.sendStatus(200);
-    };
+function handleOptionsRequest(method: string): (req: Request, res: Response) => void {
+  return (_req: Request, res: Response): void => {
+    res.header('Access-Control-Allow-Methods', method.toUpperCase());
+    res.sendStatus(200);
+  };
 }
 
 function setupErrorHandlers(app: Application): void {
-    app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-        logger.error(err.stack ?? err.message);
-        res.status(500).json({
-            error: 'Internal Server Error',
-            message: err.message,
-        });
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    logger.error(err.stack ?? err.message);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: err.message,
     });
+  });
 
-    app.use((_req: Request, res: Response) => {
-        res.status(404).json({
-            error: 'Not Found',
-            message: 'The requested endpoint does not exist',
-        });
+  app.use((_req: Request, res: Response) => {
+    res.status(404).json({
+      error: 'Not Found',
+      message: 'The requested endpoint does not exist',
     });
+  });
 }
