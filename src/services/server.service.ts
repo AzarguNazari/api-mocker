@@ -1,8 +1,10 @@
 import express, { Request, Response, NextFunction, Application } from 'express';
 import { Server } from 'http';
 import swaggerUi from 'swagger-ui-express';
+import cookieParser from 'cookie-parser';
 import { Document, OperationObject, ParameterObject, ResponseObject } from '../types';
 import { generateMockResponse, generateMockHeaders } from './mock-generator.service';
+import { validateSecurity } from './auth.service';
 import { ValidationError } from '../utils/error-handler.util';
 import { createLogger } from '../utils/logger.util';
 
@@ -24,6 +26,7 @@ export async function startMockServer(apiSpec: Document, port: number): Promise<
 
 function setupMiddleware(app: Application): void {
     app.use(express.json());
+    app.use(cookieParser());
     app.use((_req: Request, res: Response, next: NextFunction) => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
@@ -54,7 +57,7 @@ function registerRoutes(app: Application, apiSpec: Document): void {
             const expressPath = convertToExpressPath(path);
             const httpMethod = method.toLowerCase() as keyof Application;
 
-            app[httpMethod](expressPath, createRouteHandler(operation as OperationObject));
+            app[httpMethod](expressPath, createRouteHandler(operation as OperationObject, apiSpec));
             app.options(expressPath, handleOptionsRequest(method));
         }
     }
@@ -69,9 +72,10 @@ function convertToExpressPath(openApiPath: string): string {
     return openApiPath.replace(/{([^}]+)}/g, ':$1');
 }
 
-function createRouteHandler(operation: OperationObject): (req: Request, res: Response) => void {
+function createRouteHandler(operation: OperationObject, apiSpec: Document): (req: Request, res: Response) => void {
     return (req: Request, res: Response): void => {
         try {
+            validateSecurity(req, operation, apiSpec);
             validateRequiredParameters(req, operation);
             const { responseSpec, statusCode } = selectResponse(operation);
             const mockResponse = generateMockResponse(responseSpec);
@@ -84,6 +88,7 @@ function createRouteHandler(operation: OperationObject): (req: Request, res: Res
                 res.status(400).json({ error: error.message });
                 return;
             }
+            logger.error(`Error processing route: ${error instanceof Error ? error.message : String(error)}`);
             throw error;
         }
     };
