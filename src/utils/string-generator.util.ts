@@ -3,18 +3,23 @@ import {
   generateRealisticEmail,
   generateRealisticName,
   generateRealisticPhone,
-  generateRealisticAddress,
-  generateRealisticCity,
-  generateRealisticCompany,
   generateRealisticUsername,
-  generateRealisticTitle,
-  generateRealisticDescription,
   generateRealisticFirstName,
   generateRealisticLastName,
+} from './personal-data.util';
+import {
+  generateRealisticAddress,
+  generateRealisticCity,
   generateRealisticZipCode,
   generateRealisticState,
   generateRealisticCountry,
-} from './realistic-data.util';
+} from './address-data.util';
+import {
+  generateRealisticCompany,
+  generateRealisticTitle,
+  generateRealisticDescription,
+} from './business-data.util';
+import { generateRealisticCurrency } from './finance-data.util';
 
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -110,6 +115,10 @@ export function generateStringByPropertyName(propertyName: string): string | nul
 
   if (lowerProp.includes('country')) {
     return generateRealisticCountry();
+  }
+
+  if (lowerProp.includes('currency')) {
+    return generateRealisticCurrency();
   }
 
   if (lowerProp.includes('company') || lowerProp.includes('organization')) {
