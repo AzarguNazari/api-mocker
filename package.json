@@ -1,10 +1,10 @@
 {
-  "name": "@nazariazargul/api-mocker",
+  "name": "@nazariazargul/rest-mocker",
   "version": "1.0.3",
   "description": "CLI tool to mock REST endpoints from OpenAPI specifications",
   "preferGlobal": true,
   "bin": {
-    "api-mock": "./dist/index.js"
+    "rest-mock": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -40,12 +40,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AzarguNazari/api-mocker"
+    "url": "https://github.com/AzarguNazari/rest-mock"
   },
   "bugs": {
-    "url": "https://github.com/AzarguNazari/api-mocker/issues"
+    "url": "https://github.com/AzarguNazari/rest-mock/issues"
   },
-  "homepage": "https://github.com/AzarguNazari/api-mocker#readme",
+  "homepage": "https://github.com/AzarguNazari/rest-mock#readme",
   "license": "MIT",
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",

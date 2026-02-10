@@ -1,6 +1,6 @@
-# API Mocker
+# REST Mocker
 
-`api-mock` is a CLI tool that turns OpenAPI specs into a running mock REST server with realistic response data.
+`rest-mock` is a CLI tool that turns OpenAPI specs into a running mock REST server with realistic response data.
 
 ## Features
 
@@ -18,21 +18,21 @@
 ## Installation
 
 ```bash
-npm install -g @nazariazargul/api-mocker
+npm install -g @nazariazargul/rest-mocker
 ```
 
 Or run it without global install:
 
 ```bash
-npx @nazariazargul/api-mocker --path ./api.yaml --port 3000
+npx @nazariazargul/rest-mocker --path ./api.yaml --port 3000
 ```
 
 ## Usage
 
 ```bash
-api-mock --path ./api.yaml --port 3000
-api-mock --path ./specs -p 3000
-api-mock --help
+rest-mock --path ./api.yaml --port 3000
+rest-mock --path ./specs -p 3000
+rest-mock --help
 ```
 
 ### Command options
@@ -74,8 +74,8 @@ api-mock --help
 ## Development
 
 ```bash
-git clone https://github.com/AzarguNazari/api-mocker.git
-cd api-mocker
+git clone https://github.com/AzarguNazari/rest-mock.git
+cd rest-mock
 npm install
 npm run build
 npm test

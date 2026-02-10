@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for contributing to `api-mocker`.
+Thanks for contributing to `rest-mocker`.
 
 ## Development setup
 
 ```bash
-git clone https://github.com/AzarguNazari/api-mocker.git
-cd api-mocker
+git clone https://github.com/AzarguNazari/rest-mock.git
+cd rest-mock
 npm install
 ```
 

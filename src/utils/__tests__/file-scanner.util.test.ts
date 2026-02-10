@@ -74,7 +74,7 @@ describe('File Scanner Util', () => {
 
     describe('findSpecFiles', () => {
         it('should return supported spec files recursively', () => {
-            const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'api-mocker-'));
+            const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'rest-mocker-'));
             const nestedDir = path.join(tmpRoot, 'nested');
             const deepDir = path.join(nestedDir, 'deep');
             fs.mkdirSync(nestedDir);
@@ -102,7 +102,7 @@ describe('File Scanner Util', () => {
 
     describe('findYamlFiles', () => {
         it('should return only YAML files recursively', () => {
-            const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'api-mocker-'));
+            const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'rest-mocker-'));
             const nestedDir = path.join(tmpRoot, 'nested');
             fs.mkdirSync(nestedDir);
 

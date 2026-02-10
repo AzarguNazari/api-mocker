@@ -12,7 +12,7 @@ const logger = createLogger('cli');
 const program = new Command();
 
 program
-    .name('api-mock')
+    .name('rest-mock')
     .description('CLI to mock REST endpoints from OpenAPI specifications')
     .version(getCliVersion())
     .option('-p, --port <number>', 'port to run the mock server on', '3000')
