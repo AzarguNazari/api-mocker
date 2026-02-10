@@ -19,8 +19,6 @@ export function validateSecurity(
 
     if (!securitySchemes) {
         // If security is required but no schemes are defined, we might want to warn or fail.
-        // For now, if security is defined on the operation but no schemes exist, we'll assume it's an invalid spec
-        // but let's be lenient or check if it matches common patterns.
         return;
     }
 
@@ -81,13 +79,21 @@ function validateScheme(req: Request, scheme: OpenAPIV3.SecuritySchemeObject): v
     }
 }
 
+function getHeader(req: Request, name: string): string | undefined {
+    const value = req.header(name);
+    if (Array.isArray(value)) {
+        return value[0];
+    }
+    return value;
+}
+
 function validateApiKey(req: Request, scheme: OpenAPIV3.ApiKeySecurityScheme): void {
     const { name, in: location } = scheme;
     let value: string | undefined;
 
     switch (location) {
         case 'header':
-            value = req.header(name);
+            value = getHeader(req, name);
             break;
         case 'query':
             value = req.query[name] as string;
@@ -103,7 +109,8 @@ function validateApiKey(req: Request, scheme: OpenAPIV3.ApiKeySecurityScheme): v
 }
 
 function validateHttpSecurity(req: Request, scheme: OpenAPIV3.HttpSecurityScheme): void {
-    const authHeader = req.header('Authorization');
+    const authHeader = getHeader(req, 'Authorization');
+
     if (!authHeader) {
         throw new Error('Missing Authorization header');
     }
@@ -122,7 +129,8 @@ function validateHttpSecurity(req: Request, scheme: OpenAPIV3.HttpSecurityScheme
 }
 
 function validateBearerToken(req: Request): void {
-    const authHeader = req.header('Authorization');
+    const authHeader = getHeader(req, 'Authorization');
+
     if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
         throw new Error('Missing or invalid Bearer token in Authorization header');
     }
