@@ -27,6 +27,10 @@ export async function startMockServer(apiSpec: Document, port: number): Promise<
 function setupMiddleware(app: Application): void {
     app.use(express.json());
     app.use(cookieParser());
+    app.use((req: Request, _res: Response, next: NextFunction) => {
+        logger.info(`${req.method} ${req.url}`);
+        next();
+    });
     app.use((_req: Request, res: Response, next: NextFunction) => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
