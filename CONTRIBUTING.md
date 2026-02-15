@@ -1,41 +1,9 @@
 # Contributing
 
-Thanks for contributing to `rest-mocker`.
+Working on `rest-mocker` is simple:
 
-## Development setup
+1. **Install**: `npm install`
+2. **Verify**: `npm test && npm run lint`
+3. **Submit**: Create a PR with focused changes and tests.
 
-```bash
-git clone https://github.com/AzarguNazari/rest-mock.git
-cd rest-mock
-npm install
-```
-
-## Common commands
-
-```bash
-npm run build
-npm run lint
-npm test
-npm run format
-```
-
-## Pull request checklist
-
-- Keep changes focused and small when possible
-- Add or update tests for behavior changes
-- Ensure `build`, `lint`, and `test` pass locally
-- Update `README.md` when user-facing behavior changes
-- Add a changelog entry in `CHANGELOG.md`
-
-## Release notes
-
-Project maintainers handle releases through tags and GitHub workflows.
-
-## Reporting issues
-
-Use GitHub issues with:
-
-- clear reproduction steps
-- expected behavior
-- actual behavior
-- sample spec file when relevant
+We appreciate your help!
